@@ -60,8 +60,10 @@ int
 main(int argc,
      char **argv)
 {
-	assert(argc >= 1);
-	for (size_t i = 0; argv[i]; ++i) {
+	if (jstr_unlikely(argc <= 1)) {
+		fprintf(stderr, "Usage: %s <directory> ...\nMultiple directories may be used as arguments.", argv[0]);
+	}
+	for (size_t i = 1; argv[i]; ++i) {
 		if (jstr_chk(jstrio_ftw_len(argv[i], strlen(argv[i]), callback, JSTRIO_FTW_REG | JSTRIO_FTW_STATREG, "*.[ch]", 0)))
 			jstr_errdie("Failed at jstrio_ftw_len().");
 		jstr_free_j(&file_str);

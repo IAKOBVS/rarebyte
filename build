@@ -1,2 +1,5 @@
 #!/bin/sh
-cc rarebyte.c -O3 -march=native -o rarebyte
+PROG=rarebyte
+FLAGS='-O3 -march=native -Wall -Wextra'
+#shellcheck disable=SC2086
+cc $PROG.c $FLAGS -o $PROG
