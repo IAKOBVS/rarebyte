@@ -21,10 +21,10 @@
 
    MIT License (Expat) */
 
+#define JSTR_USE_LGPL 0
+
 #include "./jstring/src/jstr-io.h"
 #include "./jstring/src/jstr.h"
-
-#define dirs
 
 size_t c_freq[256];
 jstr_ty file_str = JSTR_INIT;
