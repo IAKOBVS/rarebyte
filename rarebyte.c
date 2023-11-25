@@ -33,10 +33,7 @@
 size_t c_freq[256];
 jstr_ty file_str = JSTR_INIT;
 
-int
-callback(const char *file,
-         size_t file_len,
-         const struct stat *st)
+static JSTRIO_FTW_FUNC(callback, file, file_len, st)
 {
 	/* Ignore large files. */
 	if (st->st_size >= MAX_FILE_SIZE)
@@ -67,6 +64,7 @@ main(int argc,
 {
 	if (jstr_unlikely(argc <= 1)) {
 		fprintf(stderr, "Usage: %s <directory> ...\nMultiple directories may be used as arguments.", argv[0]);
+		exit(EXIT_FAILURE);
 	}
 	for (size_t i = 1; argv[i]; ++i) {
 		if (jstr_chk(jstrio_ftw_len(argv[i], strlen(argv[i]), callback, JSTRIO_FTW_REG | JSTRIO_FTW_STATREG, "*.[ch]", 0)))
@@ -79,5 +77,5 @@ main(int argc,
 	*/
 	for (size_t i = 0; i < JSTR_ARRAY_SIZE(c_freq); ++i)
 		printf("%zu %zu\n", i, c_freq[i]);
-	return 0;
+	return EXIT_SUCCESS;
 }
