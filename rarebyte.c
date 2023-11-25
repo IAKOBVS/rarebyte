@@ -23,8 +23,8 @@
 
 #define JSTR_USE_LGPL 0
 
-#include "./jstring/src/jstr-io.h"
-#include "./jstring/src/jstr.h"
+#include "./jstring/jstr/jstr-io.h"
+#include "./jstring/jstr/jstr.h"
 
 #ifndef MAX_FILE_SIZE
 #	define MAX_FILE_SIZE 100 * JSTRIO_MB
@@ -38,7 +38,7 @@ static JSTRIO_FTW_FUNC(callback, file, file_len, st)
 	/* Ignore large files. */
 	if (st->st_size >= MAX_FILE_SIZE)
 		goto ret;
-	if (jstr_chk(jstrio_readfile_len(JSTR_STRUCT(&file_str), file, st->st_size))) {
+	if (jstr_chk(jstrio_readfile_len_j(&file_str, file, st->st_size))) {
 		jstr_errdie("Failed at jstrio_readfile_len().");
 		return JSTR_RET_ERR;
 	}
@@ -66,8 +66,10 @@ main(int argc,
 		fprintf(stderr, "Usage: %s <directory> ...\nMultiple directories may be used as arguments.", argv[0]);
 		exit(EXIT_FAILURE);
 	}
+	if (jstr_chk(jstr_reserve_j(&file_str, JSTR_PAGE_SIZE)))
+		jstr_errdie("Failed at jstr_reserve().");
 	for (size_t i = 1; argv[i]; ++i) {
-		if (jstr_chk(jstrio_ftw_len(argv[i], strlen(argv[i]), callback, JSTRIO_FTW_REG | JSTRIO_FTW_STATREG, "*.[ch]", 0)))
+		if (jstr_chk(jstrio_ftw(argv[i], callback, JSTRIO_FTW_REG | JSTRIO_FTW_STATREG, "*.[ch]", 0)))
 			jstr_errdie("Failed at jstrio_ftw_len().");
 		jstr_free_j(&file_str);
 	}
