@@ -1,5 +1,5 @@
 /* Copyright (c) 2023 James Tirta Halim <tirtajames45 at gmail dot com>
-   This file is part of the jstring library.
+   This file is part of rarebyte.
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
