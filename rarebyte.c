@@ -26,6 +26,10 @@
 #include "./jstring/src/jstr-io.h"
 #include "./jstring/src/jstr.h"
 
+#ifndef MAX_FILE_SIZE
+#	define MAX_FILE_SIZE 100 * JSTRIO_MB
+#endif
+
 size_t c_freq[256];
 jstr_ty file_str = JSTR_INIT;
 
@@ -34,7 +38,8 @@ callback(const char *file,
          size_t file_len,
          const struct stat *st)
 {
-	if (st->st_size >= 100 * JSTRIO_MB)
+	/* Ignore large files. */
+	if (st->st_size >= MAX_FILE_SIZE)
 		goto ret;
 	if (jstr_chk(jstrio_readfile_len(JSTR_STRUCT(&file_str), file, st->st_size))) {
 		jstr_errdie("Failed at jstrio_readfile_len().");
