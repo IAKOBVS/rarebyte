@@ -1,0 +1,7 @@
+#!/bin/sh
+update()
+{
+	echo "$(./jstring/update-copyright "$1")" >"$1"
+}
+update LICENSE
+update rarebyte.c

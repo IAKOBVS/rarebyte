@@ -1,0 +1,2 @@
+#!/bin/sh
+cc rarebyte.c -O3 -march=native -o rarebyte
