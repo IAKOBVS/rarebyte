@@ -61,15 +61,16 @@ main(int argc,
      char **argv)
 {
 	assert(argc >= 1);
-	for (size_t i = 0; argv[i]; ++i)
+	for (size_t i = 0; argv[i]; ++i) {
 		if (jstr_chk(jstrio_ftw_len(argv[i], strlen(argv[i]), callback, JSTRIO_FTW_REG | JSTRIO_FTW_STATREG, "*.[ch]", 0)))
 			jstr_errdie("Failed at jstrio_ftw_len().");
 		jstr_free_j(&file_str);
-		/*
-		  Format:
-		  ASCII bytes
-		*/
-		for (size_t i = 0; i < JSTR_ARRAY_SIZE(c_freq); ++i)
-			printf("%zu %zu\n", i, c_freq[i]);
-		return 0;
+	}
+	/*
+	  Format:
+	  ASCII bytes
+	*/
+	for (size_t i = 0; i < JSTR_ARRAY_SIZE(c_freq); ++i)
+		printf("%zu %zu\n", i, c_freq[i]);
+	return 0;
 }
