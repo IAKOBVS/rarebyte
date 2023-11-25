@@ -71,8 +71,8 @@ main(int argc,
 	for (size_t i = 1; argv[i]; ++i) {
 		if (jstr_chk(jstrio_ftw(argv[i], callback, JSTRIO_FTW_REG | JSTRIO_FTW_STATREG, "*.[ch]", 0)))
 			jstr_errdie("Failed at jstrio_ftw_len().");
-		jstr_free_j(&file_str);
 	}
+	jstr_free_j(&file_str);
 	/*
 	  Format:
 	  ASCII bytes
