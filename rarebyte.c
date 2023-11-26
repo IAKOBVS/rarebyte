@@ -31,32 +31,36 @@
 #	define MAX_FILE_SIZE 100 * JSTRIO_MB
 #endif
 
-unsigned long long c_freq[256];
-jstr_ty file_str = JSTR_INIT;
+typedef struct ftw_args_ty {
+	jstr_ty *file_str;
+	unsigned long long *array;
+} ftw_args_ty;
 
-static JSTRIO_FTW_FUNC(callback, file, file_len, st)
+static JSTRIO_FTW_FUNC(callback, ftw, args)
 {
-	/* Ignore large files. */
-	if (st->st_size >= MAX_FILE_SIZE)
+	if (jstr_unlikely(ftw->ftw_state == JSTRIO_FTW_STATE_NS))
 		goto ret;
-	if (jstr_chk(jstrio_readfile_len_j(&file_str, file, st->st_size))) {
+	ftw_args_ty *arg = (ftw_args_ty *)args;
+	/* Ignore large files. */
+	if (ftw->st->st_size >= MAX_FILE_SIZE)
+		goto ret;
+	if (jstr_chk(jstrio_readfile_len_j(arg->file_str, ftw->dirpath, ftw->st->st_size))) {
 		jstr_errdie("Failed at jstrio_readfile_len().");
 		return JSTR_RET_ERR;
 	}
-	jstrio_ext_ty ext = jstrio_exttype(file, file_len);
+	jstrio_ext_ty ext = jstrio_exttype(ftw->dirpath, ftw->dirpath_len);
 	if (ext == JSTRIO_FT_BINARY)
 		goto ret;
 	if (ext == JSTRIO_FT_UNKNOWN)
-		if (jstrio_isbinary_maybe(file_str.data, file_str.size))
+		if (jstrio_isbinary_maybe(arg->file_str->data, arg->file_str->size))
 			goto ret;
-	jstr_foreach(&file_str, p)
+	jstr_foreach(arg->file_str, p)
 	{
-		if (jstr_likely(c_freq[(unsigned char)*p] < (unsigned long long)-1))
-			++c_freq[(unsigned char)*p];
+		if (jstr_likely(arg->array[(unsigned char)*p] < (unsigned long long)-1))
+			++arg->array[(unsigned char)*p];
 	}
 ret:
 	return JSTR_RET_SUCC;
-	(void)file_len;
 }
 
 int
@@ -67,10 +71,15 @@ main(int argc,
 		fprintf(stderr, "Usage: %s <directory> ...\nMultiple directories may be used as arguments.", argv[0]);
 		exit(EXIT_FAILURE);
 	}
+	jstr_ty file_str = JSTR_INIT;
 	if (jstr_chk(jstr_reserve_j(&file_str, JSTR_PAGE_SIZE)))
 		jstr_errdie("Failed at jstr_reserve_j().");
+	ftw_args_ty arg;
+	arg.file_str = &file_str;
+	unsigned long long c_freq[256];
+	arg.array = c_freq;
 	for (int i = 1; argv[i]; ++i) {
-		if (jstr_chk(jstrio_ftw(argv[i], callback, JSTRIO_FTW_REG | JSTRIO_FTW_STATREG, "*.[ch]", 0)))
+		if (jstr_chk(jstrio_ftw(argv[i], callback, &arg, JSTRIO_FTW_REG | JSTRIO_FTW_STATREG, "*.[ch]", 0)))
 			jstr_errdie("Failed at jstrio_ftw().");
 	}
 	file_str.size = 0;
@@ -88,7 +97,7 @@ main(int argc,
 		if (jstr_pushback_j(&file_str, '\n'))
 			jstr_errdie("Failed at jstr_pushback_j().");
 	}
-	if (jstr_chk(jstr_print(&file_str)))
+	if (jstr_chk(jstrio_fwrite(file_str.data, 1, file_str.size, stdout)))
 		jstr_errdie("Failed at jstr_print().");
 	jstr_free_j(&file_str);
 	return EXIT_SUCCESS;
