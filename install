@@ -6,4 +6,6 @@ if ! [ -d "$DIR" ]; then
 	exit 1
 fi
 cp $PROG "$DIR"
+cp $PROG-sort "$DIR"
 echo "Installed $PROG to $DIR"
+echo "Installed $PROG-sort to $DIR"

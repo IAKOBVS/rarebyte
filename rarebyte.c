@@ -22,6 +22,7 @@
    MIT License (Expat) */
 
 #define JSTR_USE_LGPL 0
+#define JSTR_USE_UNLOCKED_IO 1
 
 #include "./jstring/jstr/jstr-io.h"
 #include "./jstring/jstr/jstr.h"
@@ -30,7 +31,7 @@
 #	define MAX_FILE_SIZE 100 * JSTRIO_MB
 #endif
 
-size_t c_freq[256];
+unsigned long long c_freq[256];
 jstr_ty file_str = JSTR_INIT;
 
 static JSTRIO_FTW_FUNC(callback, file, file_len, st)
@@ -50,7 +51,7 @@ static JSTRIO_FTW_FUNC(callback, file, file_len, st)
 			goto ret;
 	jstr_foreach(&file_str, p)
 	{
-		if (jstr_likely(c_freq[(unsigned char)*p] < (size_t)-1))
+		if (jstr_likely(c_freq[(unsigned char)*p] < (unsigned long long)-1))
 			++c_freq[(unsigned char)*p];
 	}
 ret:
@@ -67,17 +68,28 @@ main(int argc,
 		exit(EXIT_FAILURE);
 	}
 	if (jstr_chk(jstr_reserve_j(&file_str, JSTR_PAGE_SIZE)))
-		jstr_errdie("Failed at jstr_reserve().");
-	for (size_t i = 1; argv[i]; ++i) {
+		jstr_errdie("Failed at jstr_reserve_j().");
+	for (int i = 1; argv[i]; ++i) {
 		if (jstr_chk(jstrio_ftw(argv[i], callback, JSTRIO_FTW_REG | JSTRIO_FTW_STATREG, "*.[ch]", 0)))
-			jstr_errdie("Failed at jstrio_ftw_len().");
+			jstr_errdie("Failed at jstrio_ftw().");
 	}
-	jstr_free_j(&file_str);
+	file_str.size = 0;
 	/*
 	  Format:
-	  ASCII bytes
+	  ASCII_CODE N
 	*/
-	for (size_t i = 0; i < JSTR_ARRAY_SIZE(c_freq); ++i)
-		printf("%zu %zu\n", i, c_freq[i]);
+	for (size_t i = 0; i < JSTR_ARRAY_SIZE(c_freq); ++i) {
+		if (jstr_chk(jstr_utoa(JSTR_STRUCT(&file_str), i, 10)))
+			jstr_errdie("Failed at jstr_ulltoa().");
+		if (jstr_pushback_j(&file_str, ' '))
+			jstr_errdie("Failed at jstr_pushback_j().");
+		if (jstr_chk(jstr_ulltoa(JSTR_STRUCT(&file_str), c_freq[i], 10)))
+			jstr_errdie("Failed at jstr_ulltoa().");
+		if (jstr_pushback_j(&file_str, '\n'))
+			jstr_errdie("Failed at jstr_pushback_j().");
+	}
+	if (jstr_chk(jstr_print(&file_str)))
+		jstr_errdie("Failed at jstr_print().");
+	jstr_free_j(&file_str);
 	return EXIT_SUCCESS;
 }
