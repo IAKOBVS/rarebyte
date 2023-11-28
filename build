@@ -1,4 +1,5 @@
 #!/bin/sh
+
 PROG=rarebyte
 FLAGS='-O3 -march=native -Wall -Wextra'
 #shellcheck disable=SC2086
