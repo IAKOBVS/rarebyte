@@ -23,4 +23,4 @@
 #
 # MIT License (Expat)
 
-./jstring/src/clean && ./jstring/build && ./jstring/remove-lgpl
+./jstring/src/clean && ./jstring/build

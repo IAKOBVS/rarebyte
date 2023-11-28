@@ -24,4 +24,4 @@
 # MIT License (Expat)
 
 git clone https://github.com/IAKOBVS/jstring
-./jstring/build && ./jstring/remove-lgpl
+./jstring/build
