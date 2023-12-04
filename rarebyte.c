@@ -68,7 +68,7 @@ main(int argc,
      char **argv)
 {
 	if (jstr_unlikely(argc <= 1)) {
-		fprintf(stderr, "Usage: %s <directory> ...\nMultiple directories may be used as arguments.", argv[0]);
+		fprintf(stderr, "Usage: %s <directory> ...\nMultiple directories may be used as arguments.\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 	jstr_ty file_str = JSTR_INIT;
@@ -83,10 +83,8 @@ main(int argc,
 			jstr_errdie("Failed at jstrio_ftw().");
 	}
 	file_str.size = 0;
-	/*
-	  Format:
-	  ASCII_CODE N
-	*/
+	/* Format:
+	  ASCII_CODE N */
 	for (size_t i = 0; i < JSTR_ARRAY_COUNT(c_freq); ++i) {
 		if (jstr_chk(jstr_utoa(JSTR_STRUCT(&file_str), i, 10)))
 			jstr_errdie("Failed at jstr_ulltoa().");
