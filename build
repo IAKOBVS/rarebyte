@@ -3,4 +3,5 @@
 PROG=rarebyte
 FLAGS='-O3 -march=native -Wall -Wextra'
 #shellcheck disable=SC2086
+echo "cc $PROG.c $FLAGS -o $PROG"
 cc $PROG.c $FLAGS -o $PROG

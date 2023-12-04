@@ -87,7 +87,7 @@ main(int argc,
 	  Format:
 	  ASCII_CODE N
 	*/
-	for (size_t i = 0; i < JSTR_ARRAY_SIZE(c_freq); ++i) {
+	for (size_t i = 0; i < JSTR_ARRAY_COUNT(c_freq); ++i) {
 		if (jstr_chk(jstr_utoa(JSTR_STRUCT(&file_str), i, 10)))
 			jstr_errdie("Failed at jstr_ulltoa().");
 		if (jstr_pushback_j(&file_str, ' '))
@@ -97,7 +97,7 @@ main(int argc,
 		if (jstr_pushback_j(&file_str, '\n'))
 			jstr_errdie("Failed at jstr_pushback_j().");
 	}
-	if (jstr_chk(jstrio_fwrite(file_str.data, 1, file_str.size, stdout)))
+	if (jstr_unlikely(jstrio_fwrite(file_str.data, 1, file_str.size, stdout) != file_str.size))
 		jstr_errdie("Failed at jstr_print().");
 	jstr_free_j(&file_str);
 	return EXIT_SUCCESS;
