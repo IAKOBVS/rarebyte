@@ -28,7 +28,7 @@
 #include "./jstring/jstr/jstr.h"
 
 #ifndef MAX_FILE_SIZE
-#	define MAX_FILE_SIZE 100 * JSTRIO_MB
+#	define MAX_FILE_SIZE (size_t)(100 * JSTRIO_MB)
 #endif
 
 typedef struct ftw_args_ty {
@@ -44,7 +44,7 @@ static JSTRIO_FTW_FUNC(callback, ftw, args)
 	/* Ignore large files. */
 	if (ftw->st->st_size >= MAX_FILE_SIZE)
 		goto ret;
-	if (jstr_chk(jstrio_readfile_len_j(arg->file_str, ftw->dirpath, ftw->st->st_size))) {
+	if (jstr_chk(jstrio_readfile_len_j(arg->file_str, ftw->dirpath, (size_t)ftw->st->st_size))) {
 		jstr_errdie("Failed at jstrio_readfile_len().");
 		return JSTR_RET_ERR;
 	}
@@ -77,11 +77,11 @@ main(int argc,
 	ftw_args_ty arg;
 	arg.file_str = &file_str;
 	unsigned long long c_freq[256];
+	jstr_bzero(c_freq, sizeof(c_freq));
 	arg.array = c_freq;
-	for (int i = 1; argv[i]; ++i) {
+	for (int i = 1; argv[i]; ++i)
 		if (jstr_chk(jstrio_ftw(argv[i], callback, &arg, JSTRIO_FTW_REG | JSTRIO_FTW_STATREG, "*.[ch]", 0)))
 			jstr_errdie("Failed at jstrio_ftw().");
-	}
 	file_str.size = 0;
 	/* Format:
 	  ASCII_CODE N */
@@ -90,7 +90,7 @@ main(int argc,
 			jstr_errdie("Failed at jstr_ulltoa().");
 		if (jstr_pushback_j(&file_str, ' '))
 			jstr_errdie("Failed at jstr_pushback_j().");
-		if (jstr_chk(jstr_ulltoa(JSTR_STRUCT(&file_str), c_freq[i], 10)))
+		if (jstr_chk(jstr_ulltoa(&file_str.data, &file_str.size, &file_str.capacity, c_freq[i], 10)))
 			jstr_errdie("Failed at jstr_ulltoa().");
 		if (jstr_pushback_j(&file_str, '\n'))
 			jstr_errdie("Failed at jstr_pushback_j().");
