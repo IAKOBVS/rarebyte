@@ -41,7 +41,7 @@ static JSTRIO_FTW_FUNC(callback, ftw, args)
 		goto ret;
 	ftw_args_ty *arg = (ftw_args_ty *)args;
 	/* Ignore large files. */
-	if (ftw->st->st_size >= MAX_FILE_SIZE)
+	if ((size_t)ftw->st->st_size >= MAX_FILE_SIZE)
 		goto ret;
 	if (jstr_chk(jstrio_readfile_len_j(arg->file_str, ftw->dirpath, (size_t)ftw->st->st_size))) {
 		jstr_errdie("Failed at jstrio_readfile_len().");
