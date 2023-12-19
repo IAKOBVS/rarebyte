@@ -20,7 +20,7 @@
    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    SOFTWARE. */
 
-#define JSTR_USE_LGPL 0
+#define JSTR_USE_LGPL        0
 #define JSTR_USE_UNLOCKED_IO 1
 
 #include "./jstring/jstr/jstr-io.h"
@@ -35,6 +35,20 @@ typedef struct ftw_args_ty {
 	unsigned long long *array;
 } ftw_args_ty;
 
+typedef struct ftw_matcher_args_ty {
+	const char *s;
+	size_t s_len;
+} ftw_matcher_args_ty;
+
+JSTRIO_FTW_FUNC_MATCH(matcher, fname, fname_len, args)
+{
+	if (jstr_ends_len(fname, fname_len, ".c", 2)
+	    || jstr_ends_len(fname, fname_len, ".h", 2))
+		return 0;
+	return 1;
+	(void)args;
+}
+
 static JSTRIO_FTW_FUNC(callback, ftw, args)
 {
 	if (jstr_unlikely(ftw->ftw_state == JSTRIO_FTW_STATE_NS))
@@ -43,11 +57,11 @@ static JSTRIO_FTW_FUNC(callback, ftw, args)
 	/* Ignore large files. */
 	if ((size_t)ftw->st->st_size >= MAX_FILE_SIZE)
 		goto ret;
-	if (jstr_chk(jstrio_readfile_len_j(arg->file_str, ftw->dirpath, (size_t)ftw->st->st_size))) {
+	if (jstr_chk(jstrio_freadfile_len_j(arg->file_str, ftw->dirpath, "r", (size_t)ftw->st->st_size))) {
 		jstr_errdie("Failed at jstrio_readfile_len().");
 		return JSTR_RET_ERR;
 	}
-	jstrio_ext_ty ext = jstrio_exttype(ftw->dirpath, ftw->dirpath_len);
+	jstrio_ft_ty ext = jstrio_exttype(ftw->dirpath, ftw->dirpath_len);
 	if (ext == JSTRIO_FT_BINARY)
 		goto ret;
 	if (ext == JSTRIO_FT_UNKNOWN)
@@ -79,13 +93,13 @@ main(int argc,
 	jstr_bzero(c_freq, sizeof(c_freq));
 	arg.array = c_freq;
 	for (int i = 1; argv[i]; ++i)
-		if (jstr_chk(jstrio_ftw(argv[i], callback, &arg, JSTRIO_FTW_REG | JSTRIO_FTW_STATREG, "*.[ch]", 0)))
+		if (jstr_chk(jstrio_ftw(argv[i], callback, &arg, JSTRIO_FTW_REG | JSTRIO_FTW_STATREG, matcher, NULL)))
 			jstr_errdie("Failed at jstrio_ftw().");
 	file_str.size = 0;
 	/* Format:
 	  ASCII_CODE N */
 	for (size_t i = 0; i < JSTR_ARRAY_COUNT(c_freq); ++i) {
-		if (jstr_chk(jstr_utoa(JSTR_STRUCT(&file_str), i, 10)))
+		if (jstr_chk(jstr_utoa(jstr_struct(&file_str), i, 10)))
 			jstr_errdie("Failed at jstr_ulltoa().");
 		if (jstr_pushback_j(&file_str, ' '))
 			jstr_errdie("Failed at jstr_pushback_j().");
